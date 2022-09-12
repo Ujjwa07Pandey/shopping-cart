@@ -3,6 +3,7 @@ import {
   Button,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -20,6 +21,8 @@ import { useSelector, useDispatch } from "react-redux";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { useTheme } from "@material-ui/core/styles";
 import DeleteIcon from "@material-ui/icons/Delete";
+import CloseIcon from "@material-ui/icons/Close";
+
 const CartPage = () => {
   const cart = useSelector(cartSelector);
   const products = useSelector(productsSelector);
@@ -145,19 +148,38 @@ const CartPage = () => {
                       </Box>
                     </Grid>
                     <Grid item xs={3}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        disableElevation
-                        color="primary"
-                        style={{
-                          margin: "auto 0.5rem",
-                          textTransform: "unset",
-                        }}
-                        onClick={() => dispatch(deleteProduct(product.id - 1))}
-                      >
-                        {!mobile ? "Delete" : <DeleteIcon />}
-                      </Button>
+                      {!mobile ? (
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          disableElevation
+                          color="secondary"
+                          style={{
+                            margin: "auto 0.5rem",
+                            textTransform: "unset",
+                          }}
+                          startIcon={<CloseIcon />}
+                          onClick={() =>
+                            dispatch(deleteProduct(product.id - 1))
+                          }
+                        >
+                          Remove
+                        </Button>
+                      ) : (
+                        <IconButton
+                          aria-label="delete"
+                          color="secondary"
+                          style={{
+                            margin: "auto 0.5rem",
+                            textTransform: "unset",
+                          }}
+                          onClick={() =>
+                            dispatch(deleteProduct(product.id - 1))
+                          }
+                        >
+                          <DeleteIcon fontSize="large" />
+                        </IconButton>
+                      )}
                     </Grid>
                   </Grid>
                 </Box>

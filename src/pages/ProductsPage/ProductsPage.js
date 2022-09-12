@@ -8,16 +8,21 @@ import {
   FormGroup,
   Grid,
   Paper,
+  SwipeableDrawer,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@material-ui/core";
 import Layout from "../../components/Layout";
-import SearchIcon from "@material-ui/icons/Search";
 import { useDispatch, useSelector } from "react-redux";
 import { setNotification } from "../../redux/notifications/ducks";
 import { setProducts, productsSelector } from "../../redux/products/ducks";
 import Loading from "./../../components/Loading/Loading";
 import ProductCard from "../../components/ProductCard/ProductCard";
+import FilterListIcon from "@material-ui/icons/FilterList";
+import SearchIcon from "@material-ui/icons/Search";
+
 import Fuse from "fuse.js";
 import axios from "axios";
 
@@ -51,8 +56,11 @@ const ProductsPage = () => {
     Gender: [],
     Type: [],
   });
-
+  const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
+
+  const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     async function fetchProducts() {
@@ -108,7 +116,7 @@ const ProductsPage = () => {
           } else if (priceFilter.p2 && priceFilter.p3) {
             return x.price > 251;
           } else if (priceFilter.p1 && priceFilter.p3) {
-            return x.price > 450;
+            return !(x.price > 251 && x.price <= 450);
           } else if (priceFilter.p1) {
             return x.price > 0 && x.price <= 250;
           } else if (priceFilter.p2) {
@@ -177,7 +185,9 @@ const ProductsPage = () => {
       [e.target.name]: e.target.checked,
     });
   };
-
+  const toggleDrawer = () => {
+    setOpen(!open);
+  };
   return (
     <Layout>
       <form onSubmit={handleSubmit}>
@@ -206,98 +216,117 @@ const ProductsPage = () => {
             disabled={search === "" ? true : false}
             disableElevation
             color="primary"
-            style={{ margin: "auto 1rem" }}
+            style={{ margin: "auto 0.5rem" }}
           >
             <SearchIcon />
           </Button>
+          {mobile && (
+            <Button
+              variant="contained"
+              disableElevation
+              color="primary"
+              style={{ margin: "auto 0.5rem" }}
+              onClick={() => toggleDrawer()}
+            >
+              <FilterListIcon />
+            </Button>
+          )}
         </Box>
       </form>
       {loading ? (
         <Loading />
       ) : (
         <Grid container spacing={3}>
-          <Grid item md={3} xs={12}>
-            <Paper elevation={0}>
-              <Box px="1rem" py="1rem" display={"flex"} flexDirection="column">
-                {filtersList.map((filter, i) => (
+          {!mobile && (
+            <Grid item md={3} xs={12}>
+              <Paper elevation={0}>
+                <Box
+                  px="1rem"
+                  py="1rem"
+                  display={"flex"}
+                  flexDirection="column"
+                >
+                  {filtersList.map((filter, i) => (
+                    <FormControl
+                      component="fieldset"
+                      style={{ margin: "1rem 0rem" }}
+                    >
+                      <Typography variant="h6" style={{ fontWeight: 600 }}>
+                        {filter.filter_name}
+                      </Typography>
+                      <FormGroup>
+                        {filter.options.map((item, j) => (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={filters[filter.filter_name].includes(
+                                  item
+                                )}
+                                color="primary"
+                                onChange={(e) =>
+                                  handleFilterChange(e, filter.filter_name)
+                                }
+                                name={item}
+                              />
+                            }
+                            label={item}
+                          />
+                        ))}
+                      </FormGroup>
+                    </FormControl>
+                  ))}
                   <FormControl
                     component="fieldset"
                     style={{ margin: "1rem 0rem" }}
                   >
                     <Typography variant="h6" style={{ fontWeight: 600 }}>
-                      {filter.filter_name}
+                      Price
                     </Typography>
                     <FormGroup>
-                      {filter.options.map((item, j) => (
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={filters[filter.filter_name].includes(
-                                item
-                              )}
-                              color="primary"
-                              onChange={(e) =>
-                                handleFilterChange(e, filter.filter_name)
-                              }
-                              name={item}
-                            />
-                          }
-                          label={item}
-                        />
-                      ))}
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={priceFilter.p1}
+                            color="primary"
+                            onChange={(e) => handlePriceFilter(e)}
+                            name={"p1"}
+                          />
+                        }
+                        label={"INR 0 - 250"}
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={priceFilter.p2}
+                            color="primary"
+                            onChange={(e) => handlePriceFilter(e)}
+                            name={"p2"}
+                          />
+                        }
+                        label={"INR 251 - 450"}
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={priceFilter.p3}
+                            color="primary"
+                            onChange={(e) => handlePriceFilter(e)}
+                            name={"p3"}
+                          />
+                        }
+                        label={" > INR 450"}
+                      />
                     </FormGroup>
                   </FormControl>
-                ))}
-                <FormControl
-                  component="fieldset"
-                  style={{ margin: "1rem 0rem" }}
-                >
-                  <Typography variant="h6" style={{ fontWeight: 600 }}>
-                    Price
-                  </Typography>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={priceFilter.p1}
-                          color="primary"
-                          onChange={(e) => handlePriceFilter(e)}
-                          name={"p1"}
-                        />
-                      }
-                      label={"INR 0 - 250"}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={priceFilter.p2}
-                          color="primary"
-                          onChange={(e) => handlePriceFilter(e)}
-                          name={"p2"}
-                        />
-                      }
-                      label={"INR 251 - 450"}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={priceFilter.p3}
-                          color="primary"
-                          onChange={(e) => handlePriceFilter(e)}
-                          name={"p3"}
-                        />
-                      }
-                      label={" > INR 450"}
-                    />
-                  </FormGroup>
-                </FormControl>
-              </Box>
-            </Paper>
-          </Grid>
+                </Box>
+              </Paper>
+            </Grid>
+          )}
+
           <Grid
             item
             md={9}
@@ -330,6 +359,86 @@ const ProductsPage = () => {
           </Grid>
         </Grid>
       )}
+
+      <SwipeableDrawer
+        anchor={"right"}
+        open={open}
+        onClose={() => toggleDrawer()}
+        onOpen={() => toggleDrawer()}
+      >
+        <Paper elevation={0}>
+          <Box px="1rem" py="1rem" display={"flex"} flexDirection="column">
+            {filtersList.map((filter, i) => (
+              <FormControl component="fieldset" style={{ margin: "1rem 0rem" }}>
+                <Typography variant="h6" style={{ fontWeight: 600 }}>
+                  {filter.filter_name}
+                </Typography>
+                <FormGroup>
+                  {filter.options.map((item, j) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={filters[filter.filter_name].includes(item)}
+                          color="primary"
+                          onChange={(e) =>
+                            handleFilterChange(e, filter.filter_name)
+                          }
+                          name={item}
+                        />
+                      }
+                      label={item}
+                    />
+                  ))}
+                </FormGroup>
+              </FormControl>
+            ))}
+            <FormControl component="fieldset" style={{ margin: "1rem 0rem" }}>
+              <Typography variant="h6" style={{ fontWeight: 600 }}>
+                Price
+              </Typography>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={priceFilter.p1}
+                      color="primary"
+                      onChange={(e) => handlePriceFilter(e)}
+                      name={"p1"}
+                    />
+                  }
+                  label={"INR 0 - 250"}
+                />
+              </FormGroup>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={priceFilter.p2}
+                      color="primary"
+                      onChange={(e) => handlePriceFilter(e)}
+                      name={"p2"}
+                    />
+                  }
+                  label={"INR 251 - 450"}
+                />
+              </FormGroup>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={priceFilter.p3}
+                      color="primary"
+                      onChange={(e) => handlePriceFilter(e)}
+                      name={"p3"}
+                    />
+                  }
+                  label={" > INR 450"}
+                />
+              </FormGroup>
+            </FormControl>
+          </Box>
+        </Paper>
+      </SwipeableDrawer>
     </Layout>
   );
 };

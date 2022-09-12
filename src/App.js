@@ -1,6 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import ProductPage from "./pages/ProductPage";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ProductsPage from "./pages/ProductsPage";
 import CartPage from "./pages/CartPage";
 import NotFound from "./pages/NotFound";
@@ -11,12 +10,8 @@ function App() {
     <div className="App">
       <Router>
         <Switch>
+          <Route exact path="/" component={ProductsPage} />
           <Route exact path="/cart" component={CartPage} />
-
-          <Route exact path="/product-page/:id">
-            <ProductPage />
-          </Route>
-          <Route path="/" component={ProductsPage} />
           <Route path="*">
             <NotFound />
           </Route>
